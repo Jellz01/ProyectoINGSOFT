@@ -54,3 +54,11 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+# Archivos de tarea (no incluir en repo)
+T02_*.txt
+cambiar_autores.py
+push_automatico.py
+*.png
+*.jpg
+*.jpeg
