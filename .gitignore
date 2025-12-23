@@ -63,3 +63,15 @@ push_automatico.py
 *.jpg
 *.jpeg
 participaciones_foro.txt
+
+# Archivos a ignorar solicitados
+T02_04_GrupoXX_Apellido1Nombre1.docx
+scripts_git_autores.txt
+cambiar_autores.sh
+filter_script.sh
+push_gradual.txt
+.claude/
+.env.example
+DOCUMENTACION_COMPLETA.txt
+ESTADO_DEL_PROYECTO.md
+test.db
