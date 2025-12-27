@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from app.models.caja import EstadoCajaEnum, TipoMovimientoEnum
@@ -25,8 +25,7 @@ class MovimientoCajaResponse(MovimientoCajaBase):
     fecha: datetime
     venta_id: Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CajaBase(BaseModel):
     """
@@ -52,5 +51,4 @@ class CajaResponse(CajaBase):
     estado: EstadoCajaEnum
     movimientos: List[MovimientoCajaResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
