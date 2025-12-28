@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from app.models.usuario import RolEnum, EstadoEnum
 
@@ -32,5 +32,4 @@ class UsuarioResponse(UsuarioBase):
     id: int
     estado: EstadoEnum
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

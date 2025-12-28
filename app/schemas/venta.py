@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, List
 from datetime import datetime
 from app.models.venta import EstadoVentaEnum
@@ -24,8 +24,7 @@ class DetalleVentaResponse(DetalleVentaBase):
     id: int
     subtotal: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class VentaBase(BaseModel):
     """
@@ -50,5 +49,4 @@ class VentaResponse(VentaBase):
     estado: EstadoVentaEnum
     detalles: List[DetalleVentaResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
