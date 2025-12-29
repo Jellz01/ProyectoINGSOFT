@@ -75,3 +75,7 @@ push_gradual.txt
 DOCUMENTACION_COMPLETA.txt
 ESTADO_DEL_PROYECTO.md
 test.db
+
+# Archivos adicionales a ignorar
+CONTRIBUTING.md
+conclusiones.txt
