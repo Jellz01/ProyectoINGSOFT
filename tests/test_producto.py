@@ -88,3 +88,36 @@ def test_get_producto(test_client: TestClient, db_session: Session):
     assert data["id"] == producto.id
     assert data["nombre"] == "Producto a Obtener"
     assert data["codigo"] == "P-002"
+
+def test_list_productos(test_client: TestClient, db_session: Session):
+    """
+    Prueba el listado de todos los productos.
+    """
+    # 1. Crear múltiples productos
+    proveedor = Proveedor(nombre="Proveedor List", ruc="55566677788")
+    categoria = Categoria(nombre="Categoria List")
+    db_session.add_all([proveedor, categoria])
+    db_session.commit()
+
+    producto1 = Producto(nombre="Producto 1", codigo="L-001", precio_compra=5, precio_venta=10, stock=10, stock_minimo=2, categoria_id=categoria.id, proveedor_id=proveedor.id)
+    producto2 = Producto(nombre="Producto 2", codigo="L-002", precio_compra=6, precio_venta=12, stock=20, stock_minimo=4, categoria_id=categoria.id, proveedor_id=proveedor.id)
+    db_session.add_all([producto1, producto2])
+    db_session.commit()
+
+    # 2. Realizar la petición para listar los productos
+    response = test_client.get("/api/productos/")
+
+    # 3. Verificar la respuesta
+    assert response.status_code == 200
+    response_data = response.json()
+    assert "data" in response_data
+    data_list = response_data["data"]
+    assert isinstance(data_list, list)
+    # La base de datos de prueba no se limpia entre tests de la misma función, 
+    # por lo que habrá más de 2 productos si se ejecutan todos los tests.
+    # Verificamos que al menos nuestros 2 productos están en la lista.
+    assert len(data_list) >= 2
+    
+    nombres = [p["nombre"] for p in data_list]
+    assert "Producto 1" in nombres
+    assert "Producto 2" in nombres
