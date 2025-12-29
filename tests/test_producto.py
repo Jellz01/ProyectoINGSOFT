@@ -52,3 +52,39 @@ def test_create_producto(test_client: TestClient, db_session: Session):
     db_producto = db_session.get(Producto, data["id"])
     assert db_producto is not None
     assert db_producto.nombre == "Producto Test"
+
+def test_get_producto(test_client: TestClient, db_session: Session):
+    """
+    Prueba la obtención de un producto por su ID.
+    """
+    # 1. Crear un producto para obtener
+    proveedor = Proveedor(nombre="Proveedor Get", ruc="11122233344")
+    categoria = Categoria(nombre="Categoria Get")
+    db_session.add_all([proveedor, categoria])
+    db_session.commit()
+
+    producto = Producto(
+        nombre="Producto a Obtener",
+        codigo="P-002",
+        precio_compra=20.0,
+        precio_venta=25.0,
+        stock=50,
+        stock_minimo=5,
+        categoria_id=categoria.id,
+        proveedor_id=proveedor.id
+    )
+    db_session.add(producto)
+    db_session.commit()
+    db_session.refresh(producto)
+
+    # 2. Realizar la petición para obtener el producto
+    response = test_client.get(f"/api/productos/{producto.id}")
+
+    # 3. Verificar la respuesta
+    assert response.status_code == 200
+    response_data = response.json()
+    assert "data" in response_data
+    data = response_data["data"]
+    assert data["id"] == producto.id
+    assert data["nombre"] == "Producto a Obtener"
+    assert data["codigo"] == "P-002"
