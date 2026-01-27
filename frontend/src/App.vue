@@ -1,30 +1,28 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>MiTienda</h2>
+      <small>Sistema de Gestion</small>
+    </div>
+    <nav>
+      <ul>
+        <li><RouterLink to="/">Inicio</RouterLink></li>
+        <li><RouterLink to="/categorias">Categorias</RouterLink></li>
+        <li><RouterLink to="/productos">Productos</RouterLink></li>
+        <li><RouterLink to="/proveedores">Proveedores</RouterLink></li>
+        <li><RouterLink to="/clientes">Clientes</RouterLink></li>
+        <li><RouterLink to="/usuarios">Usuarios</RouterLink></li>
+        <li><RouterLink to="/ventas">Ventas</RouterLink></li>
+        <li><RouterLink to="/caja">Caja</RouterLink></li>
+        <li><RouterLink to="/reportes">Reportes</RouterLink></li>
+      </ul>
+    </nav>
+  </aside>
+  <main class="main-content">
+    <RouterView />
+  </main>
 </template>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
