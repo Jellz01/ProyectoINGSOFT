@@ -9,6 +9,9 @@ const usuarios = ref([])
 const loading = ref(true)
 const showModal = ref(false)
 const message = ref({ text: '', type: '' })
+const expandedVenta = ref(null)
+const ventaDetalles = ref(null)
+const showDetalleModal = ref(false)
 
 const nuevaVenta = ref({
   usuario_id: '',
@@ -127,6 +130,21 @@ const cancelarVenta = async (id) => {
   }
 }
 
+const verDetalles = async (venta) => {
+  try {
+    const response = await ventasService.getById(venta.id)
+    ventaDetalles.value = response.data.data || response.data
+    showDetalleModal.value = true
+  } catch (error) {
+    showMessage('Error al cargar detalles de la venta', 'danger')
+  }
+}
+
+const closeDetalleModal = () => {
+  showDetalleModal.value = false
+  ventaDetalles.value = null
+}
+
 const getEstadoClass = (estado) => {
   const classes = {
     'COMPLETADA': 'badge badge-completada',
@@ -190,6 +208,7 @@ onMounted(loadData)
               <td><span :class="getEstadoClass(venta.estado)">{{ venta.estado }}</span></td>
               <td>{{ venta.detalles?.length || 0 }} productos</td>
               <td class="actions">
+                <button class="btn btn-primary btn-sm" @click="verDetalles(venta)">Ver</button>
                 <button
                   v-if="venta.estado !== 'CANCELADA'"
                   class="btn btn-danger btn-sm"
@@ -287,6 +306,50 @@ onMounted(loadData)
             <button type="submit" class="btn btn-primary">Crear Venta</button>
           </div>
         </form>
+      </div>
+    </div>
+    <!-- Modal Detalles de Venta -->
+    <div v-if="showDetalleModal" class="modal-overlay" @click.self="closeDetalleModal">
+      <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+          <h3>Detalles de Venta #{{ ventaDetalles?.id }}</h3>
+          <button class="modal-close" @click="closeDetalleModal">&times;</button>
+        </div>
+        <div v-if="ventaDetalles">
+          <div class="grid-2" style="margin-bottom: 15px;">
+            <div><strong>Fecha:</strong> {{ formatDate(ventaDetalles.fecha) }}</div>
+            <div><strong>Estado:</strong> <span :class="getEstadoClass(ventaDetalles.estado)">{{ ventaDetalles.estado }}</span></div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Producto ID</th>
+                  <th>Cantidad</th>
+                  <th>P. Unitario</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="detalle in ventaDetalles.detalles" :key="detalle.id">
+                  <td>{{ detalle.producto_id }}</td>
+                  <td>{{ detalle.cantidad }}</td>
+                  <td>${{ detalle.precio_unitario?.toFixed(2) }}</td>
+                  <td>${{ detalle.subtotal?.toFixed(2) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="text-align: right; font-weight: bold;">TOTAL:</td>
+                  <td style="font-weight: bold; font-size: 1.1rem;">${{ ventaDetalles.total?.toFixed(2) }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" @click="closeDetalleModal">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
