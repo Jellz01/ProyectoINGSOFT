@@ -8,7 +8,10 @@ const cajaAbierta = ref(null)
 const loading = ref(true)
 const showAbrirModal = ref(false)
 const showCerrarModal = ref(false)
+const showMovimientoModal = ref(false)
 const message = ref({ text: '', type: '' })
+
+const tiposMovimiento = ['DEPOSITO', 'RETIRO']
 
 const nuevaCaja = ref({
   monto_inicial: 0,
@@ -17,6 +20,12 @@ const nuevaCaja = ref({
 
 const cierreCaja = ref({
   monto_final: 0
+})
+
+const nuevoMovimiento = ref({
+  tipo: 'DEPOSITO',
+  monto: 0,
+  descripcion: ''
 })
 
 const loadData = async () => {
@@ -84,6 +93,42 @@ const cerrarCaja = async () => {
   }
 }
 
+const openMovimientoModal = () => {
+  nuevoMovimiento.value = { tipo: 'DEPOSITO', monto: 0, descripcion: '' }
+  showMovimientoModal.value = true
+}
+
+const registrarMovimiento = async () => {
+  if (!cajaAbierta.value) return
+  if (nuevoMovimiento.value.monto <= 0) {
+    showMessage('El monto debe ser mayor a 0', 'warning')
+    return
+  }
+  try {
+    await cajaService.registrarMovimiento(cajaAbierta.value.id, {
+      tipo: nuevoMovimiento.value.tipo,
+      monto: Number(nuevoMovimiento.value.monto),
+      descripcion: nuevoMovimiento.value.descripcion || null
+    })
+    showMessage('Movimiento registrado correctamente', 'success')
+    showMovimientoModal.value = false
+    loadData()
+  } catch (error) {
+    showMessage('Error al registrar movimiento', 'danger')
+  }
+}
+
+const getTipoMovClass = (tipo) => {
+  const classes = {
+    'DEPOSITO': 'badge badge-deposito',
+    'RETIRO': 'badge badge-retiro',
+    'VENTA': 'badge badge-venta',
+    'APERTURA': 'badge badge-apertura',
+    'CIERRE': 'badge badge-cierre'
+  }
+  return classes[tipo] || 'badge'
+}
+
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
@@ -135,6 +180,42 @@ onMounted(loadData)
 
       <div v-else style="text-align: center; padding: 30px; color: #95a5a6;">
         No hay caja abierta actualmente
+      </div>
+    </div>
+
+    <!-- Movimientos de caja abierta -->
+    <div class="card" v-if="cajaAbierta">
+      <div class="card-header">
+        <h2 class="card-title">Movimientos de Caja Actual</h2>
+        <button class="btn btn-primary" @click="openMovimientoModal">Nuevo Movimiento</button>
+      </div>
+
+      <div class="table-container" v-if="cajaAbierta.movimientos && cajaAbierta.movimientos.length > 0">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Descripcion</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="mov in cajaAbierta.movimientos" :key="mov.id">
+              <td>{{ mov.id }}</td>
+              <td><span :class="getTipoMovClass(mov.tipo)">{{ mov.tipo }}</span></td>
+              <td :style="{ color: mov.tipo === 'RETIRO' ? '#e74c3c' : '#2ecc71' }">
+                {{ mov.tipo === 'RETIRO' ? '-' : '+' }}${{ mov.monto?.toFixed(2) }}
+              </td>
+              <td>{{ mov.descripcion || '-' }}</td>
+              <td>{{ formatDate(mov.fecha) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-else style="text-align: center; padding: 20px; color: #95a5a6;">
+        No hay movimientos registrados
       </div>
     </div>
 
@@ -225,6 +306,35 @@ onMounted(loadData)
         </form>
       </div>
     </div>
+    <!-- Modal Nuevo Movimiento -->
+    <div v-if="showMovimientoModal" class="modal-overlay" @click.self="showMovimientoModal = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Nuevo Movimiento</h3>
+          <button class="modal-close" @click="showMovimientoModal = false">&times;</button>
+        </div>
+        <form @submit.prevent="registrarMovimiento">
+          <div class="form-group">
+            <label>Tipo</label>
+            <select class="form-control" v-model="nuevoMovimiento.tipo" required>
+              <option v-for="tipo in tiposMovimiento" :key="tipo" :value="tipo">{{ tipo }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Monto ($)</label>
+            <input type="number" class="form-control" v-model.number="nuevoMovimiento.monto" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label>Descripcion (opcional)</label>
+            <textarea class="form-control" v-model="nuevoMovimiento.descripcion" rows="2"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn" @click="showMovimientoModal = false">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Registrar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -238,4 +348,9 @@ onMounted(loadData)
 }
 .badge-abierta { background-color: #2ecc71; }
 .badge-cerrada { background-color: #95a5a6; }
+.badge-deposito { background-color: #2ecc71; }
+.badge-retiro { background-color: #e74c3c; }
+.badge-venta { background-color: #3498db; }
+.badge-apertura { background-color: #f39c12; }
+.badge-cierre { background-color: #95a5a6; }
 </style>
