@@ -8,6 +8,7 @@ const message = ref({ text: '', type: '' })
 
 const bajosStock = ref(null)
 const ventasDia = ref(null)
+const resumenInventario = ref(null)
 
 const loadBajosStock = async () => {
   try {
@@ -33,6 +34,18 @@ const loadVentasDia = async () => {
   }
 }
 
+const loadResumenInventario = async () => {
+  try {
+    loading.value = true
+    const response = await reportesService.resumenInventario()
+    resumenInventario.value = response.data.data || null
+  } catch (error) {
+    showMessage('Error al cargar resumen de inventario', 'danger')
+  } finally {
+    loading.value = false
+  }
+}
+
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
@@ -48,6 +61,7 @@ const changeTab = (tab) => {
   activeTab.value = tab
   if (tab === 'bajo-stock') loadBajosStock()
   if (tab === 'ventas-dia') loadVentasDia()
+  if (tab === 'inventario') loadResumenInventario()
 }
 
 onMounted(loadBajosStock)
@@ -70,6 +84,9 @@ onMounted(loadBajosStock)
       </button>
       <button :class="['tab', activeTab === 'ventas-dia' ? 'tab-active' : '']" @click="changeTab('ventas-dia')">
         Ventas del Dia
+      </button>
+      <button :class="['tab', activeTab === 'inventario' ? 'tab-active' : '']" @click="changeTab('inventario')">
+        Resumen Inventario
       </button>
     </div>
 
@@ -171,6 +188,37 @@ onMounted(loadBajosStock)
         </div>
         <div v-else style="text-align: center; padding: 30px; color: #95a5a6;">
           No hay ventas registradas hoy
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen Inventario -->
+    <div class="card" v-if="activeTab === 'inventario'">
+      <div class="card-header">
+        <h2 class="card-title">{{ resumenInventario?.titulo || 'Resumen de Inventario' }}</h2>
+        <button class="btn btn-primary" @click="loadResumenInventario">Actualizar</button>
+      </div>
+
+      <div v-if="loading" class="loading">Cargando...</div>
+
+      <div v-else-if="resumenInventario">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>{{ resumenInventario.total_productos || 0 }}</h3>
+            <p>Total Productos</p>
+          </div>
+          <div class="stat-card">
+            <h3>${{ resumenInventario.valor_total_inventario?.toFixed(2) || '0.00' }}</h3>
+            <p>Valor del Inventario</p>
+          </div>
+          <div class="stat-card">
+            <h3 style="color: #e74c3c;">{{ resumenInventario.productos_sin_stock || 0 }}</h3>
+            <p>Sin Stock</p>
+          </div>
+          <div class="stat-card">
+            <h3 style="color: #f39c12;">{{ resumenInventario.productos_bajo_stock || 0 }}</h3>
+            <p>Bajo Stock</p>
+          </div>
         </div>
       </div>
     </div>
