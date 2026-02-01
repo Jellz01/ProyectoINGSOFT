@@ -7,6 +7,7 @@ const loading = ref(false)
 const message = ref({ text: '', type: '' })
 
 const bajosStock = ref(null)
+const ventasDia = ref(null)
 
 const loadBajosStock = async () => {
   try {
@@ -20,6 +21,24 @@ const loadBajosStock = async () => {
   }
 }
 
+const loadVentasDia = async () => {
+  try {
+    loading.value = true
+    const response = await reportesService.ventasDelDia()
+    ventasDia.value = response.data.data || null
+  } catch (error) {
+    showMessage('Error al cargar reporte de ventas del dia', 'danger')
+  } finally {
+    loading.value = false
+  }
+}
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('es-EC', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 const showMessage = (text, type) => {
   message.value = { text, type }
   setTimeout(() => { message.value = { text: '', type: '' } }, 3000)
@@ -28,6 +47,7 @@ const showMessage = (text, type) => {
 const changeTab = (tab) => {
   activeTab.value = tab
   if (tab === 'bajo-stock') loadBajosStock()
+  if (tab === 'ventas-dia') loadVentasDia()
 }
 
 onMounted(loadBajosStock)
@@ -47,6 +67,9 @@ onMounted(loadBajosStock)
     <div class="tabs">
       <button :class="['tab', activeTab === 'bajo-stock' ? 'tab-active' : '']" @click="changeTab('bajo-stock')">
         Productos Bajo Stock
+      </button>
+      <button :class="['tab', activeTab === 'ventas-dia' ? 'tab-active' : '']" @click="changeTab('ventas-dia')">
+        Ventas del Dia
       </button>
     </div>
 
@@ -98,6 +121,59 @@ onMounted(loadBajosStock)
         </div>
       </div>
     </div>
+
+    <!-- Ventas del Dia -->
+    <div class="card" v-if="activeTab === 'ventas-dia'">
+      <div class="card-header">
+        <h2 class="card-title">{{ ventasDia?.titulo || 'Ventas del Dia' }}</h2>
+        <button class="btn btn-primary" @click="loadVentasDia">Actualizar</button>
+      </div>
+
+      <div v-if="loading" class="loading">Cargando...</div>
+
+      <div v-else-if="ventasDia">
+        <div class="stats-grid" style="margin-bottom: 15px;">
+          <div class="stat-card">
+            <h3>{{ ventasDia.cantidad_ventas || 0 }}</h3>
+            <p>Ventas realizadas</p>
+          </div>
+          <div class="stat-card">
+            <h3>${{ ventasDia.total_vendido?.toFixed(2) || '0.00' }}</h3>
+            <p>Total vendido</p>
+          </div>
+        </div>
+
+        <div class="table-container" v-if="ventasDia.ventas && ventasDia.ventas.length > 0">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Productos</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="venta in ventasDia.ventas" :key="venta.id">
+                <td>{{ venta.id }}</td>
+                <td>{{ formatDate(venta.fecha) }}</td>
+                <td><strong>${{ venta.total?.toFixed(2) }}</strong></td>
+                <td>
+                  <span :class="venta.estado === 'COMPLETADA' ? 'stock-badge stock-ok' : 'stock-badge stock-bajo'">
+                    {{ venta.estado }}
+                  </span>
+                </td>
+                <td>{{ venta.cantidad_productos }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else style="text-align: center; padding: 30px; color: #95a5a6;">
+          No hay ventas registradas hoy
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -138,5 +214,9 @@ onMounted(loadBajosStock)
 .stock-bajo {
   background-color: #f8d7da;
   color: #721c24;
+}
+.stock-ok {
+  background-color: #d4edda;
+  color: #155724;
 }
 </style>
