@@ -272,27 +272,62 @@ table tbody tr:hover {
 
 /* Alerts */
 .alert {
-  padding: 15px;
-  border-radius: 5px;
+  padding: 15px 20px;
+  border-radius: 8px;
   margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .alert-success {
   background-color: #d4edda;
   color: #155724;
-  border: 1px solid #c3e6cb;
+  border-left: 4px solid #2ecc71;
 }
 
 .alert-danger {
   background-color: #f8d7da;
   color: #721c24;
-  border: 1px solid #f5c6cb;
+  border-left: 4px solid #e74c3c;
 }
 
 .alert-warning {
   background-color: #fff3cd;
   color: #856404;
-  border: 1px solid #ffeeba;
+  border-left: 4px solid #f39c12;
+}
+
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-left: 4px solid #3498db;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
 }
 
 /* Stats Cards */
